@@ -85,6 +85,8 @@ class TemplatesSpider(scrapy.Spider):
         self.log(img_path)
         Path(os.path.dirname(img_path)).mkdir(mode=0o655, parents=True, exist_ok=True)
         # Fix from https://stackoverflow.com/questions/34957748/http-error-403-forbidden-with-urlretrieve
-        opener = urllib.request.URLopener()
-        opener.addheader('User-Agent', 'meme-templates-crawler')
-        opener.retrieve(url, img_path)
+        # urllib.request.URLopener was deprecated and removed in Python 3.14; use a
+        # Request with a custom User-Agent header instead to preserve the original behaviour.
+        req = urllib.request.Request(url, headers={'User-Agent': 'meme-templates-crawler'})
+        with urllib.request.urlopen(req) as response, open(img_path, 'wb') as out_file:
+            out_file.write(response.read())
